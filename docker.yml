@@ -1,0 +1,138 @@
+- hosts: all
+  become: true
+  vars:
+    ubuntu_release: jammy
+    container_count: 4
+    default_container_name: docker
+    default_container_image: ubuntu
+    default_container_command: sleep 1d
+
+  tasks:
+    - name: Create LVM Volume Group on /dev/sdb
+      community.general.lvg:
+        vg: docker-vg
+        pvs: /dev/sdb
+        pvresize: true
+
+    - name: Create Docker Root Partition
+      community.general.lvol:
+        vg: docker-vg
+        lv: docker-root
+        size: 50%VG
+        shrink: false
+        resizefs: true
+
+    - name: Create an ext4 filesystem on /dev/docker-vg/docker-root
+      community.general.filesystem:
+        fstype: ext4
+        dev: /dev/docker-vg/docker-root
+
+    - name: Mount new Docker Root filesystem
+      ansible.posix.mount:
+        path: /var/lib/docker
+        src: /dev/docker-vg/docker-root
+        fstype: ext4
+        state: mounted
+
+    - name: Create Docker Data Partition
+      community.general.lvol:
+        vg: docker-vg
+        lv: docker-data
+        size: 50%VG
+        shrink: false
+        resizefs: true
+
+    - name: Create an ext4 filesystem on /dev/docker-vg/docker-data
+      community.general.filesystem:
+        fstype: ext4
+        dev: /dev/docker-vg/docker-data
+
+    - name: Mount new Docker Data filesystem
+      ansible.posix.mount:
+        path: /opt/docker
+        src: /dev/docker-vg/docker-data
+        fstype: ext4
+        state: mounted
+
+    - name: Install aptitude
+      ansible.builtin.apt:
+        name: aptitude
+        state: latest
+        update_cache: true
+
+    - name: Install required system packages
+      ansible.builtin.apt:
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - software-properties-common
+          - lsb-release
+          - python3-pip
+          - virtualenv
+          - python3-setuptools
+          - uidmap
+        state: latest
+        update_cache: true
+
+    - name: Create Docker daemon file
+      copy:
+        dest: "/etc/docker/daemon.json"
+        owner: root
+        content: |
+          {
+            "default-address-pools":
+            [
+              {"base":"10.10.0.0/16","size":24}
+            ],
+            "icc": false,
+            "userns-remap": "default",
+            "userland-proxy": false,
+            "no-new-privileges": true,
+            "live-restore": true
+          }
+
+    - name: Add Docker GPG apt Key
+      ansible.builtin.apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker Repository
+      ansible.builtin.apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu {{ ubuntu_release }} stable
+        state: present
+
+    - name: Install docker-ce
+      ansible.builtin.apt:
+        name: docker-ce
+        state: latest
+        update_cache: true
+
+    - name: Install docker compose
+      ansible.builtin.apt:
+        name: docker-compose-plugin
+        state: latest
+        update_cache: true
+
+    - name: Install Docker Module for Python
+      pip:
+        name: docker
+
+    - name: Enable Docker content trust
+      ansible.builtin.lineinfile:
+        path: /etc/environment
+        regexp: '^DOCKER_CONTENT_TRUST='
+        line: DOCKER_CONTENT_TRUST=1
+
+    - name: Enable IP forwarding
+      ansible.posix.sysctl:
+        name: net.ipv4.conf.all.forwarding
+        value: 1
+        state: present
+
+    - name: Enable and start Docker service
+      ansible.builtin.systemd:
+        name: docker
+        state: started
+        enabled: true
