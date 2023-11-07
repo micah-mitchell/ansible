@@ -1,0 +1,11 @@
+---
+- name: Install QEMU Guest
+  ansible.builtin.apt:
+    name:
+      - qemu-guest-agent
+    state: present
+    update_cache: yes
+  when: (qemuGuest == true) and (proxmoxHost == false)
+
+
+

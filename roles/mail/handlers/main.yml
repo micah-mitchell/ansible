@@ -1,0 +1,8 @@
+---
+- name: restart postfix
+  ansible.builtin.command:
+    cmd: service restart postfix
+
+- name: newaliases
+  ansible.builtin.command:
+    cmd: newaliases

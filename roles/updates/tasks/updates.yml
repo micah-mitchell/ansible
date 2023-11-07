@@ -1,0 +1,35 @@
+---
+### Package Management
+- name: Upgrade Packages
+  ansible.builtin.apt:
+    upgrade: safe
+    update_cache: yes
+    cache_valid_time: 300
+  become: yes
+  when: updatePackages == true
+
+- name: Upgrade Distro
+  ansible.builtin.apt:
+    upgrade: dist
+    update_cache: yes
+    cache_valid_time: 300
+  become: yes
+  when: updateDistro == true
+
+- name: Install Packages
+  ansible.builtin.apt:
+    name:
+      - vim
+      - unzip
+      - htop
+      - iftop
+      - iotop
+      - mtr
+      - ncdu
+      - multitail
+      - tmux
+      - git
+      - sysstat
+      - sudo
+    state: present
+    update_cache: yes

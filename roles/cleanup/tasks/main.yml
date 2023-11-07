@@ -1,0 +1,7 @@
+---
+- name: Include Package Cleanup Tasks
+  ansible.builtin.include_tasks: cleanup.yml
+  args:
+    apply:
+      become: true
+  when: (updatePackages | bool)

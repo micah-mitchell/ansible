@@ -1,0 +1,7 @@
+---
+- name: Include NTP (timesyncd) Setup Tasks
+  ansible.builtin.include_tasks: timesyncd.yml
+  args:
+    apply:
+      become: true
+  when: (setupNTP | bool) and (ntpService == "timesyncd")

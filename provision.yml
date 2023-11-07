@@ -1,0 +1,67 @@
+---
+
+- hosts: tests
+  user: ansible
+  become_user: root
+  become: true
+  vars:
+    username: ansible
+    timezone: "America/Chicago"
+    dnsDomainName: "d1.mors.io"
+    adminEmail: "admins@mors.io"
+    adminUser: "morsadmin"
+    proxmoxHost: false
+    qemuGuest: true
+    updatePackages: true
+    updateDistro: false
+    systemHardening: true
+
+    dmzSetup: true
+    swapSetup: true
+    swapSize: "512M"
+
+    setupCommon: true
+    linuxProfileRepo: "https://github.com/micah-mitchell/linuxProfile.git"
+    linuxPublicKeys: "https://github.com/micah-mitchell.keys"
+
+    setupNTP: true
+    ntpService: "timesyncd"
+
+    setupHostname: true
+
+    setupMail: true
+    mailService: "postfix"
+
+    setupSSH: true
+
+    setupFirewall: true
+    firewallService: "ufw"
+    
+    setupLogging: true
+    loggingService: "rsyslog"
+
+    setupAutoUpdate: true
+
+    setupDocker: true
+
+    setupSerial: true
+
+    setupFail2ban: true
+
+  roles:
+   - updates
+   - common
+   - ntp
+   - hostname
+   - mail
+   - ssh
+   - qemu
+   - firewall
+   - logging
+   - docker
+   - serial
+   - fail2ban
+   - auto-update
+   - cleanup
+   #- nginx
+

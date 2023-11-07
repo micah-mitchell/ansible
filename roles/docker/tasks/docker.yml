@@ -1,13 +1,4 @@
-- hosts: all
-  become: true
-  vars:
-    ubuntu_release: jammy
-    container_count: 4
-    default_container_name: docker
-    default_container_image: ubuntu
-    default_container_command: sleep 1d
-
-  tasks:
+---
     - name: Create LVM Volume Group on /dev/sdb
       community.general.lvg:
         vg: docker-vg
@@ -76,6 +67,12 @@
         state: latest
         update_cache: true
 
+    - name: Create Docker folder
+      ansible.builtin.file:
+        path: /etc/docker
+        state: directory
+        mode: '0755'
+
     - name: Create Docker daemon file
       copy:
         dest: "/etc/docker/daemon.json"
@@ -128,7 +125,7 @@
     - name: Enable IP forwarding
       ansible.posix.sysctl:
         name: net.ipv4.conf.all.forwarding
-        value: 1
+        value: '1'
         state: present
 
     - name: Enable and start Docker service

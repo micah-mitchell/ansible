@@ -1,0 +1,7 @@
+---
+- name: Include Serial Setup Tasks
+  ansible.builtin.include_tasks: serial.yml
+  args:
+    apply:
+      become: true
+  when: (setupSerial | bool) and (proxmoxHost == false) and (qemuGuest == true)

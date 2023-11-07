@@ -1,0 +1,36 @@
+---
+### Configure Hostname
+- name: Update Hostname in /etc/hostname
+  ansible.builtin.copy:
+    dest: /etc/hostname
+    content: |
+      {{ ansible_hostname }}.{{ dnsDomainName }}
+  notify: update hostname
+
+- name: Update Hostname in /etc/mailname
+  ansible.builtin.copy:
+    dest: /etc/mailname
+    content: |
+      {{ ansible_hostname }}.{{ dnsDomainName }}
+  notify: update hostname
+
+- name: Update Hostname in /etc/hosts
+  lineinfile:
+    dest: /etc/hosts
+    regexp: "^(127.0.[0-9].[0-9]).*$"
+    line: \g<1> {{ ansible_hostname }}.{{ dnsDomainName }} {{ ansible_hostname }}
+    state: present
+    backrefs: yes
+  notify: update hostname
+  when: proxmoxHost == false
+
+- name: Update Hostname in /etc/hosts
+  lineinfile:
+    dest: /etc/hosts
+    regexp: "^([0-9]*.[0-9]*.[0-9]*.[0-9]*) .*pve$"
+    line: \g<1> {{ ansible_hostname }}.{{ dnsDomainName }} {{ ansible_hostname }}
+    backrefs: yes
+    state: present
+  notify: update hostname
+  when: proxmoxHost == true
+

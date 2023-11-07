@@ -1,0 +1,42 @@
+---
+### Package Management
+- name: Install Packages
+  ansible.builtin.apt:
+    name:
+      - postfix
+    state: present
+    update_cache: yes
+
+### Configure Postfix and Mail
+- name: Update Postfix MyHostname
+  lineinfile:
+    dest: /etc/postfix/main.cf
+    regexp: "^myhostname.*"
+    line: "myhostname = {{ ansible_hostname }}.{{ dnsDomainName }}"
+    state: present
+  notify: restart postfix
+
+- name: Update Postfix MyDestination
+  lineinfile:
+    dest: /etc/postfix/main.cf
+    regexp: "^mydestination.*"
+    line: "mydestination = {{ ansible_hostname }}.{{ dnsDomainName }}, localhost.{{ dnsDomainName }}, localhost"
+    state: present
+  notify: restart postfix
+
+- name: Update Postfix SMTP Banner
+  lineinfile:
+    dest: /etc/postfix/main.cf
+    regexp: "^smtpd_banner .*"
+    line: "smtpd_banner = $myhostname ESMTP"
+    state: present
+  notify: restart postfix
+
+- name: Update Root Email
+  lineinfile:
+    dest: /etc/aliases
+    regexp: "^root:.*"
+    line: "root:{{ adminEmail }}"
+    state: present
+  notify: newaliases
+

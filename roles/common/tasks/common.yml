@@ -1,0 +1,80 @@
+---
+### Package Management
+- name: Install Packages
+  ansible.builtin.apt:
+    name:
+      - vim
+      - unzip
+      - htop
+      - iftop
+      - iotop
+      - mtr
+      - ncdu
+      - multitail
+      - tmux
+      - git
+      - sysstat
+      - sudo
+    state: present
+    update_cache: yes
+
+### Profile Setup
+- name: Install system bash.bashrc file
+  ansible.builtin.copy:
+    src: files/bash.bashrc
+    dest: /etc/bash.bashrc
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Create skel files
+  ansible.builtin.copy:
+    src: files/skel/
+    dest: /etc/skel/
+    owner: root
+    group: root
+    mode: '0644'
+    directory_mode: '0755'
+      
+- name: Add skel files to root
+  ansible.builtin.copy:
+    src: /etc/skel/
+    dest: /root/
+    owner: root
+    group: root
+    mode: '0644'
+    directory_mode: '0755'
+    remote_src: true
+
+#- name: "Add skel files to {{ adminUser }}"
+#  ansible.builtin.copy:
+#    src: files/skel/
+#    dest: "/home/{{ adminUser }}/"
+#    owner: "{{ adminUser }}"
+#    group: "{{ adminUser }}"
+#    mode: 0644
+#    directory_mode: 0776
+
+- name: Checkout Git linuxProfile
+  ansible.builtin.git:
+    repo: https://github.com/micah-mitchell/linuxProfile.git
+    dest: /tmp/linuxProfile
+    accept_hostkey: true
+
+- name: Add linuxProfile files to {{ adminUser }}
+  ansible.builtin.copy:
+    src: /tmp/linuxProfile/
+    dest: /home/{{ adminUser }}/
+    owner: "{{ adminUser }}"
+    group: "{{ adminUser }}"
+    mode: '0644'
+    directory_mode: '0755'
+    remote_src: true
+
+- name: Ensure Proper Permissions of {{ adminUser }} home folder
+  ansible.builtin.file:
+    path: /home/{{ adminUser }}
+    state: directory
+    mode: '0755'
+    owner: "{{ adminUser }}"
+    group: "{{ adminUser }}"

@@ -1,0 +1,8 @@
+---
+- name: Include Docker Install Tasks
+  ansible.builtin.include_tasks: docker.yml
+  args:
+    apply:
+      become: true
+  when: (setupDocker | bool) and (proxmoxHost == false)
+

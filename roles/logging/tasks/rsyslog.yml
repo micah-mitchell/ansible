@@ -1,0 +1,21 @@
+---
+- name: Install Rsyslog
+  ansible.builtin.apt:
+    name:
+      - rsyslog
+    state: present
+    update_cache: yes
+
+#- ansible.builtin.stat:
+#    path: /etc/rsyslog.d/remote.conf
+#  register: statResult
+
+- name: Configure Rsyslog
+  ansible.builtin.copy:
+    src: files/remote.conf
+    dest: /etc/rsyslog.d/remote.conf
+    owner: root
+    group: root
+    mode: 0644
+#  when: statResult.stat.exists == false
+  notify: restart rsyslog

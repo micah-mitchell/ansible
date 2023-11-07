@@ -1,0 +1,7 @@
+---
+- name: Include System Update Tasks
+  ansible.builtin.include_tasks: updates.yml
+  args:
+    apply:
+      become: true
+  when: (updatePackages | bool)

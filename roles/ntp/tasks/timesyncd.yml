@@ -1,0 +1,22 @@
+---
+### Package Management
+- name: Install Packages
+  ansible.builtin.apt:
+    name:
+      - ntpdate
+    state: present
+    update_cache: yes
+
+### Configure NTP and Time
+- name: Update NTP Config to use Gateway NTP
+  lineinfile:
+    dest: /etc/systemd/timesyncd.conf
+    regexp: ".*NTP=.*$"
+    line: "NTP={{ ansible_default_ipv4.gateway }}"
+    state: present
+  notify: update time
+
+- name: Set Timezone to {{ timezone }}
+  community.general.timezone:
+    name: "{{ timezone }}"
+  notify: update time

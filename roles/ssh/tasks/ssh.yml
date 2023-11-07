@@ -1,0 +1,170 @@
+---
+- name: Enable Legal Banner
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: ".*Banner .*$"
+    line: "Banner /etc/legal"
+    state: present
+  notify: restart ssh
+
+- name: Install Legal Banner
+  ansible.builtin.copy:
+    src: files/legal
+    dest: /etc/legal
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Not using X11, so lets disable it
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: ".*X11Forwarding .*$"
+    line: "X11Forwarding no"
+    state: present
+  notify: restart ssh
+
+- name: Logging set to INFO
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: ".*LogLevel .*$"
+    line: "LogLevel INFO"
+    state: present
+  notify: restart ssh
+  when: systemHardening == false
+
+- name: SyslogFacility set to AUTH
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: ".*SyslogFacility .*$"
+    line: "SyslogFacility AUTH"
+    state: present
+  notify: restart ssh
+
+- name: Allow Agent Forwarding
+  lineinfile:
+    dest: /etc/ssh/ssh_config
+    regexp: ".*ForwardAgent .*$"
+    line: "ForwardAgent yes"
+    state: present
+  notify: restart ssh
+
+- name: Block Empty Passwords
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: ".*PermitEmptyPasswords .*$"
+    line: "PermitEmptyPasswords no"
+    state: present
+  notify: restart ssh
+
+- name: Block Root Password Login
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: ".*PermitRootLogin .*$"
+    line: "PermitRootLogin without-password"
+    state: present
+  when: proxmoxHost == true
+  notify: restart ssh
+    
+### SSH Hardning ###
+- name: Disable Root Login [SSH-7412]
+  lineinfile: 
+    dest: /etc/ssh/sshd_config
+    regexp: "^PermitRootLogin"
+    line: "PermitRootLogin no"
+    state: present
+  when: proxmoxHost == false
+  notify: restart ssh
+
+- name: Disable Root Shell [SSH-7412]
+  ansible.builtin.user:
+    name: root
+    shell: /usr/sbin/nologin
+  when: proxmoxHost == false
+    
+#- name: Disable password authentication
+#  lineinfile:
+#    dest: /etc/ssh/sshd_config
+#    regexp: "^#?PasswordAuthentication"
+#    line: "PasswordAuthentication no"
+#    state: present
+#  notify: restart ssh
+
+- name: Disable TCPKeepAlive [SSH-7408]
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: ".*TCPKeepAlive .*$"
+    line: "TCPKeepAlive no"
+    state: present
+  notify: restart ssh
+  when: systemHardening == true
+
+- name: Disable TCP Forwarding [SSH-7408] 
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: ".*AllowTCPForwarding .*$"
+    line: "AllowTCPForwarding no"
+    state: present
+  notify: restart ssh
+  when: systemHardening == true
+
+- name: Configure ClientAliveCountMax from 3 to 2 [SSH-7408] 
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: ".*ClientAliveCountMax .*$"
+    line: "ClientAliveCountMax 2"
+    state: present
+  notify: restart ssh
+  when: systemHardening == true
+
+- name: Configure ClientAliveInterval from 0 to 300 [SSH-7408] 
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: ".*ClientAliveInterval .*$"
+    line: "ClientAliveInterval 300"
+    state: present
+  notify: restart ssh
+  when: systemHardening == true
+
+- name: Configure MaxAuthTries from 6 to 3 [SSH-7408]
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: ".*MaxAuthTries .*$"
+    line: "MaxAuthTries 3"
+    state: present
+  notify: restart ssh
+  when: systemHardening == true
+
+- name: Configure LogLevel from INFO to VERBOSE [SSH-7408] 
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: ".*LogLevel .*$"
+    line: "LogLevel VERBOSE"
+    state: present
+  notify: restart ssh
+  when: systemHardening == true
+
+- name: Configure MaxSessions from 10 to 2 [SSH-7408]
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: ".*MaxSessions .*$"
+    line: "MaxSessions 2"
+    state: present
+  notify: restart ssh
+  when: systemHardening == true
+
+- name: Enable SSH StrictModes [SSH-7416] 
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: ".*StrictModes .*$"
+    line: "StrictModes yes"
+    state: present
+  notify: restart ssh
+  when: systemHardening == true
+
+#- name: 
+#  lineinfile:
+#    dest: /etc/ssh/sshd_config
+#    regexp: ".* .*$"
+#    line: ""
+#    state: present
+#  notify: restart ssh

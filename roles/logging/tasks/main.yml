@@ -1,0 +1,8 @@
+---
+- name: Include Logging (rsyslog) Setup Tasks
+  ansible.builtin.include_tasks: rsyslog.yml
+  args:
+    apply:
+      become: true
+  when: (setupLogging | bool) and (loggingService == "rsyslog")
+

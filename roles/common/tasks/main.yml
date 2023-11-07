@@ -1,0 +1,7 @@
+---
+- name: Include Common System Setting Tasks
+  ansible.builtin.include_tasks: common.yml
+  args:
+    apply:
+      become: true
+  when: (setupCommon | bool)

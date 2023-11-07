@@ -1,0 +1,12 @@
+[production]
+127.0.0.1
+
+[tests]
+#test01.d1.mors.io
+#test02.d1.mors.io
+#test03.d1.mors.io
+#test04.d1.mors.io
+172.31.7.179
+172.31.7.180
+172.31.7.181
+172.31.7.182
