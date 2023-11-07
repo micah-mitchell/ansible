@@ -57,7 +57,7 @@
 
 - name: Checkout Git linuxProfile
   ansible.builtin.git:
-    repo: https://github.com/micah-mitchell/linuxProfile.git
+    repo: '{{ linuxGitHubProfile }}'
     dest: /tmp/linuxProfile
     accept_hostkey: true
 
@@ -78,3 +78,79 @@
     mode: '0755'
     owner: "{{ adminUser }}"
     group: "{{ adminUser }}"
+
+### User Setup
+- name: Ensure sudo group is present
+  group:
+    name: sudo
+    state: present
+
+- name: Ensure sudo group has sudo privileges
+  lineinfile:
+    dest: /etc/sudoers
+    state: present
+    regexp: "^%sudo"
+    line: "%sudo ALL=(ALL:ALL) ALL"
+    validate: "/usr/sbin/visudo -cf %s"
+
+- name: Create {{ adminUser }}
+  user:
+    name: "{{ adminUser }}"
+    password_lock: true
+    groups: sudo
+    shell: /bin/bash
+    state: present
+
+- name: Create {{ ansibleUser }}
+  user:
+    name: "{{ ansibleUser }}"
+    password_lock: true
+    groups: users,admin,wheel
+    shell: /bin/bash
+    state: present
+
+- name: Add Admin Pub Key to root
+  authorized_key:
+    user: root
+    key: '{{ item }}'
+    state: present
+    exclusive: true
+  with_file:
+    - files/admin.pub
+  when: proxmoxHost == false
+
+- name: Add Admin Pub Key to root
+  authorized_key:
+    user: root
+    key: '{{ item }}'
+    state: present
+    exclusive: true
+    path: ~/.ssh/authorized_keys2
+  with_file:
+    - files/admin.pub
+  when: proxmoxHost == true
+
+- name: Add Ansible Pub Key to {{ ansibleUser }}
+  authorized_key:
+    user: '{{ ansibleUser }}'
+    key: '{{ item }}'
+    state: present
+    exclusive: true
+  with_file:
+    - files/ansible.pub
+
+- name: Add Git Pub Keys to {{ adminUser }}
+  authorized_key:
+    user: '{{ adminUser }}'
+    key: '{{ linuxGitHubKeys }}'
+    state: present
+    exclusive: false
+
+- name: Add Admin Pub Key to {{ adminUser }}
+  authorized_key:
+    user: '{{ adminUser }}'
+    key: '{{ item }}'
+    state: present
+    exclusive: false
+  with_file:
+    - files/admin.pub

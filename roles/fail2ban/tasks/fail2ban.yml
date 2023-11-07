@@ -3,7 +3,7 @@
   ansible.builtin.apt:
     name:
       - fail2ban
-      - sendmail
+      #- sendmail
     state: present
     update_cache: yes
 

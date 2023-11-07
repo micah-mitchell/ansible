@@ -1,14 +1,14 @@
 ---
 
 - hosts: '{{ hostgroup }}'
-  user: '{{ username }}'
+  user: '{{ ansibleUser }}'
   become_user: root
   become: true
   vars:
-    username: ansible
     hostgroup: "production"
     timezone: "America/Chicago"
     dnsDomainName: "d1.mors.io"
+    ansibleUser: "ansible"
     adminEmail: "admins@mors.io"
     adminUser: "morsadmin"
     proxmoxHost: false
@@ -22,8 +22,8 @@
     swapSize: "512M"
 
     setupCommon: true
-    linuxProfileRepo: "https://github.com/micah-mitchell/linuxProfile.git"
-    linuxPublicKeys: "https://github.com/micah-mitchell.keys"
+    linuxGitHubProfile: "https://github.com/micah-mitchell/linuxProfile.git"
+    linuxGitHubKeys: "https://github.com/micah-mitchell.keys"
 
     setupNTP: true
     ntpService: "timesyncd"
@@ -43,7 +43,7 @@
 
     setupAutoUpdate: true
 
-    setupDocker: true
+    setupDocker: false
 
     setupSerial: true
 
