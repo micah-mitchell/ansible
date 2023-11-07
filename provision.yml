@@ -1,11 +1,12 @@
 ---
 
-- hosts: tests
-  user: ansible
+- hosts: '{{ hostgroup }}'
+  user: '{{ username }}'
   become_user: root
   become: true
   vars:
     username: ansible
+    hostgroup: "production"
     timezone: "America/Chicago"
     dnsDomainName: "d1.mors.io"
     adminEmail: "admins@mors.io"

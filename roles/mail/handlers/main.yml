@@ -1,7 +1,8 @@
 ---
 - name: restart postfix
-  ansible.builtin.command:
-    cmd: service restart postfix
+  service:
+    name: postfix
+    state: restarted
 
 - name: newaliases
   ansible.builtin.command:
