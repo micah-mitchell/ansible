@@ -25,6 +25,8 @@
     linuxGitHubProfile: "https://github.com/micah-mitchell/linuxProfile.git"
     linuxGitHubKeys: "https://github.com/micah-mitchell.keys"
 
+    setupCertificates: true
+
     setupNTP: true
     ntpService: "timesyncd"
 
@@ -52,6 +54,7 @@
   roles:
    - updates
    - common
+   - certificates
    - ntp
    - hostname
    - mail
