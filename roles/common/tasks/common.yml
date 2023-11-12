@@ -46,38 +46,6 @@
     directory_mode: '0755'
     remote_src: true
 
-#- name: "Add skel files to {{ adminUser }}"
-#  ansible.builtin.copy:
-#    src: files/skel/
-#    dest: "/home/{{ adminUser }}/"
-#    owner: "{{ adminUser }}"
-#    group: "{{ adminUser }}"
-#    mode: 0644
-#    directory_mode: 0776
-
-- name: Checkout Git linuxProfile
-  ansible.builtin.git:
-    repo: '{{ linuxGitHubProfile }}'
-    dest: /tmp/linuxProfile
-    accept_hostkey: true
-
-- name: Add linuxProfile files to {{ adminUser }}
-  ansible.builtin.copy:
-    src: /tmp/linuxProfile/
-    dest: /home/{{ adminUser }}/
-    owner: "{{ adminUser }}"
-    group: "{{ adminUser }}"
-    mode: '0644'
-    directory_mode: '0755'
-    remote_src: true
-
-- name: Ensure Proper Permissions of {{ adminUser }} home folder
-  ansible.builtin.file:
-    path: /home/{{ adminUser }}
-    state: directory
-    mode: '0755'
-    owner: "{{ adminUser }}"
-    group: "{{ adminUser }}"
 
 ### User Setup
 - name: Ensure sudo group is present
@@ -93,21 +61,22 @@
     line: "%sudo ALL=(ALL:ALL) ALL"
     validate: "/usr/sbin/visudo -cf %s"
 
-- name: Create {{ adminUser }}
-  user:
-    name: "{{ adminUser }}"
-    password_lock: true
-    groups: sudo
-    shell: /bin/bash
-    state: present
-
 - name: Create {{ ansibleUser }}
-  user:
+  ansible.builtin.user:
     name: "{{ ansibleUser }}"
     password_lock: true
     groups: users,admin,wheel
     shell: /bin/bash
     state: present
+
+- name: Add Ansible Pub Key to {{ ansibleUser }}
+  authorized_key:
+    user: '{{ ansibleUser }}'
+    key: '{{ item }}'
+    state: present
+    exclusive: true
+  with_file:
+    - files/ansible.pub
 
 - name: Add Admin Pub Key to root
   authorized_key:
@@ -130,14 +99,14 @@
     - files/admin.pub
   when: proxmoxHost == true
 
-- name: Add Ansible Pub Key to {{ ansibleUser }}
-  authorized_key:
-    user: '{{ ansibleUser }}'
-    key: '{{ item }}'
+- name: Create {{ adminUser }}
+  ansible.builtin.user:
+    name: "{{ adminUser }}"
+    password_lock: true
+    groups: sudo
+    home: '/home/{{ adminUser }}'
+    shell: /bin/bash
     state: present
-    exclusive: true
-  with_file:
-    - files/ansible.pub
 
 - name: Add Git Pub Keys to {{ adminUser }}
   authorized_key:
@@ -154,3 +123,36 @@
     exclusive: false
   with_file:
     - files/admin.pub
+
+#- name: "Add skel files to {{ adminUser }}"
+#  ansible.builtin.copy:
+#    src: files/skel/
+#    dest: "/home/{{ adminUser }}/"
+#    owner: "{{ adminUser }}"
+#    group: "{{ adminUser }}"
+#    mode: 0644
+#    directory_mode: 0776
+
+- name: Checkout Git linuxProfile
+  ansible.builtin.git:
+    repo: '{{ linuxGitHubProfile }}'
+    dest: /tmp/linuxProfile
+    accept_hostkey: true
+
+- name: Add linuxProfile files to {{ adminUser }}
+  ansible.builtin.copy:
+    src: /tmp/linuxProfile/
+    dest: '/home/{{ adminUser }}/'
+    owner: "{{ adminUser }}"
+    group: "{{ adminUser }}"
+    mode: '0644'
+    directory_mode: '0755'
+    remote_src: true
+
+- name: Ensure Proper Permissions of {{ adminUser }} home folder
+  ansible.builtin.file:
+    path: '/home/{{ adminUser }}'
+    state: directory
+    mode: '0755'
+    owner: "{{ adminUser }}"
+    group: "{{ adminUser }}"
