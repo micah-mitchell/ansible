@@ -18,8 +18,7 @@
     systemHardening: true
 
     dmzSetup: true
-    swapSetup: true
-    swapSize: "512M"
+
 
     setupCommon: true
     linuxGitHubProfile: "https://github.com/micah-mitchell/linuxProfile.git"
@@ -49,6 +48,10 @@
 
     setupSerial: true
 
+    setupSwap: true
+    swapSize: "512M"
+    swapFile: "/swapfile"
+
     setupFail2ban: true
 
   roles:
@@ -64,6 +67,7 @@
    - logging
    - docker
    - serial
+   - swap
    - fail2ban
    - auto-update
    - cleanup
