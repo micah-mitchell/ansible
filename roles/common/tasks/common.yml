@@ -65,7 +65,7 @@
   ansible.builtin.user:
     name: "{{ ansibleUser }}"
     password_lock: true
-    groups: users,admin,wheel
+    groups: users,admin
     shell: /bin/bash
     state: present
 
