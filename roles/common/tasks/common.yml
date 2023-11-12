@@ -113,7 +113,7 @@
     dest: /etc/sudoers
     state: present
     regexp: "^{{ adminUser }}"
-    line: "%sudo ALL=(ALL:ALL) NOPASSWD: ALL"
+    line: "{{ adminUser }} ALL=(ALL:ALL) NOPASSWD: ALL"
     validate: "/usr/sbin/visudo -cf %s"
 
 - name: Add Git Pub Keys to {{ adminUser }}
