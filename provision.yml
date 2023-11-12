@@ -42,17 +42,19 @@
     setupLogging: true
     loggingService: "rsyslog"
 
-    setupAutoUpdate: true
-
-    setupDocker: false
-
     setupSerial: true
 
     setupSwap: true
     swapSize: "512M"
     swapFile: "/swapfile"
 
+    setupAutoUpdate: true
+
     setupFail2ban: true
+
+    setupDocker: false
+
+    setupAuditd: false
 
   roles:
    - updates
@@ -65,11 +67,11 @@
    - qemu
    - firewall
    - logging
-   - docker
    - serial
    - swap
-   - fail2ban
    - auto-update
+   - fail2ban
+   - docker
+   - auditd
    - cleanup
-   #- nginx
 
